@@ -1,9 +1,8 @@
 -- ABCMusic class by Fred Bogg. See Main for more info.
--- v 0.4.5 beta
 
 ABCMusic = class()
       
-function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
+function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,DEBUG,DUMP)
     -- if true, LOOP will keep the tune playing over and over and over...
     -- INSTRUMENT is the element number of the instrument table, which contains sfxr settings.
     -- DEBUG will print out hopefully handy things, but probably not helpful to you.
@@ -16,15 +15,16 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     if self.DEBUG == nil then self.DEBUG = false end
     if DUMP == nil then DUMP = false end
     
-    self.soundTable = {} -- this table will hold the parameters to be turned into a sound.
-    
-    if _ABCTune == nil then
+    self._ABCtune = _ABCTUNE
+    if self._ABCtune == nil then
         print("No tune provided. Use ABCMusic(tunename,LOOP,INSTRUMENT,DEBUG,DUMP)")
         print("For example, mytune = ABCMusic(ABCtune,1,4)")
-        -- use last saved parsed tune
-        self.soundTable = self:loadLastParsedTune()
     end    
+    
     self.LOOP = LOOP
+    
+    -- clear the saved tables for tunes before releasing
+    --clearProjectData()
     
     -- initialise variables
     self.time = 0
@@ -47,7 +47,7 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     self.remainingTupletNotes = 0
     
     
-    
+    self.soundTable = {} -- this table will hold the parameters to be turned into a sound.
     self.timeElapsedSinceLastNote = 0 -- used to check in the draw() loop whether to move on.
     self.duration = 1 -- in ABC format this is a unit, usually equivalent to a quaver.
     self.DurationSeconds = 0 -- to be used to hold the number of seconds a note will be held.
@@ -87,7 +87,7 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     ["Bm"]={"B","D","^F"}}
         
     -- Print the raw ABC tune for debugging
-    if self.DEBUG then print(_ABCtune) end
+    if self.DEBUG then print(self._ABCtune) end
     
     -- This is a table of patterns that we use to match against the ABC tune.
     -- We use these to find the next, biggest meaningful bit of the tune.
@@ -135,14 +135,26 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
                                                 -- already specified fields like METRE or KEY
                                                 
 --    sound(SOUND_BLIT, 10393)
-    -- if not loading the last parsed
-   if _ABCTune ~= nil then
-        self:parseTune(_ABCTune) -- read and make sense of the ABC tune
-        --   sound(SOUND_PICKUP, 45359)
-        self:createSoundTable() -- fill table up with freq values and timings to feed sound()
+
+    -- if a tune was passed
+    if self._ABCtune ~= nil then
+        local lsNameHash = self:extractTitle(self._ABCtune)
+        if lsNameHash == nil then lsNameHash = "untitled" end
+        print("The title of the tune is ".. lsNameHash)
+        self.soundTable = self:loadParsedTune(lsNameHash)
+        
+        if self.soundTable == nil then
+            self.soundTable = {}
+            self:parseTune(self._ABCtune) -- read and make sense of the ABC tune
+             -- sound(SOUND_PICKUP, 45359)
+            self:createSoundTable() -- fill table up with freq values and timings to feed sound()
+        end
+    else
+        -- use last saved parsed tune if no ABC tune provided
+        self.soundTable = self:loadParsedTune()
     end
     
---    sound(SOUND_JUMP, 25400)
+   -- sound(SOUND_JUMP, 25400)
     self:preCache() -- play it first silently to cache, without duplicates
 --    sound(SOUND_EXPLODE, 16774)
 
@@ -151,25 +163,54 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     end
 end
 
-function ABCMusic:loadLastParsedTune()
+function ABCMusic:loadParsedTune(key)
+    local lsNameHash = key
+    if lsNameHash == nil then
+        lsNameHash = "mySavedTune"
+    end
+    local lsSavedTunes = readProjectData("savedTunes")
+    if lsSavedTunes == nil then lsSavedTunes = "" end
+    print("These are the saved tunes:\n"..lsSavedTunes)
     -- get the string saved from the last parse
-    local lsLoadedString = readLocalData("mySavedTune")
+    local lsLoadedString = readProjectData(lsNameHash)
     -- decode it from JSON to table
     if lsLoadedString ~= nil then
-        
-        print("As no tune was passed, I have loaded the last sound table.")
+        print("Loaded "..lsNameHash)
+        return Json.Decode(lsLoadedString)
     else
-        print("Sorry, you haven't parsed any tunes yet, so I couldn't load the last one.")
-        
+        print("Could not load a pre-parsed tune. Perhaps this is the first time playing it.")
+        return nil
     end
-    return Json.Decode(lsLoadedString)
+end
+
+function ABCMusic:extractTitle(tune)
+        -- make name by finding title
+    local _ABCtune = tune
+    local lsNameHash
+    local lnStartIndex, _ = string.find(_ABCtune,"T:") + 2
+    if lnStartIndex == nil then
+        lsNameHash = nil
+    else
+        local lnEndIndex = string.find(_ABCtune,":",lnStartIndex) - 2
+        lsNameHash = string.sub(_ABCtune,lnStartIndex, lnEndIndex)..self.instrument
+    end
+    
+    return lsNameHash
 end
 
 function ABCMusic:saveParsedTune(table)
     -- convert nested table to JSON and save as a string
     local json = Json.Encode(table)
-    saveLocalData("mySavedTune",json)
-    
+    local lsNameHash
+    if self._ABCtune ~= nil then
+        lsNameHash = self:extractTitle(self._ABCtune)
+    end
+    if lsNameHash == nil then lsNameHash = "untitled" end
+        
+    saveProjectData(lsNameHash,json) 
+    local lsSavedTunes = readProjectData("savedTunes")
+    if lsSavedTunes == nil then lsSavedTunes = "" end
+    saveProjectData("savedTunes", lsSavedTunes .. "\n" .. lsNameHash)
 end
 
 -- the ABC standard allows fraction durations, so we turn them from strings to numbers here.
@@ -510,7 +551,7 @@ function ABCMusic:createSoundTable()
             for i = 1, #gtCycleOfFifths do
            
                 if gtCycleOfFifths[i] == value1 then
-                    gtCycleOfFifths = i
+                    cycleOfFifthsIndex = i
                     break
                 end
             
@@ -870,8 +911,6 @@ function ABCMusic:createSoundTable()
         parsedTunePointer = parsedTunePointer + 4
     end
     
-   -- print(self.dataName)
-    --saveProjectData(self.dataName, self.soundTable)
     self:saveParsedTune(self.soundTable)
 end
 

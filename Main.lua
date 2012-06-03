@@ -14,7 +14,7 @@
    limitations under the License.
 --]]
 -- Project Name: ABCplayerCodea
--- Version: 0.1.x beta
+-- Version: 0.4.3.6 beta
 -- By Fred Bogg
 -- Begun: November 2011
 
@@ -27,9 +27,9 @@
 -- of notes to be played with their durations, caches and plays it.  With the parsing and caching
 -- done first, playback is possible without slowing down draw frames (psuedo-background).
 
--- Thanks: ipda41001, KMEB, Codeslinger, ruilov, pixel, Simeon
+-- Thanks: ipda41001, KMEB, Codeslinger, ruilov, pixel, Simeon, Shaun Brown
 
--- Issues: Many. :) Not compliant with ABC standard, check caching, slow parsing
+-- Issues: Many. :) Not compliant with ABC standard, slow string parsing
 
 -- Plans: 
 -- make into two-layered class to remove global namespace pollution
@@ -41,6 +41,7 @@
 -- Change Log:
 
 -- 0.4
+-- save parsed sound table for quicker loading of same tune
 -- precaching
 -- tuplets
 -- fade function
@@ -69,7 +70,7 @@ function draw()
     if myTune == nil then     
         -- Instantiates the class using the tune. 
         -- arg 1 for loop, arg 2 for instrument, arg 3 for debug, arg 4 dumps
-        myTune = ABCMusic(_,1,4)
+        myTune = ABCMusic(StillAlive,1,4)
       --  myTune2 = ABCMusic(ABCtune2,1,4)
         --myTune3 = ABCMusic(ABCtune3,1,7)
        -- myTune3 = ABCMusic(ABCtune4,1)

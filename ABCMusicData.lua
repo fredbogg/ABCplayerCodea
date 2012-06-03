@@ -4,7 +4,7 @@ function sampleMusic()
     -- this allegedly human- and machine-readable format.  
     -- You could even write your own by hand or use another program to convert a MIDI file.
    
-     ABCtune =
+     BoggBlues =
      'X:1\n'
     ..'T:Bogg Blues\n'
     ..'C:Fred Bogg\n'
@@ -83,7 +83,7 @@ BCtune =
 ..'D ^C C B, D ^C C B, |E,3 A, G, F, E, D, |D E F G D E F G |A2 z2 d2 z2 |G2 z D B, G, B, D |\n'
 ..'G D G B d2 F2 |G2 z D B, G, B, D |G D G B d2 F2 |G2 z2 G2 z2 |G2 G,-G,/2 G,/2 G,2 z2 ||\n'
 
- ABCtune = 'X:1\n'
+ Moonlight = 'X:1\n'
 ..'T:Beethoven - Moonlight Sonata (Clarinet)\n'
 ..'Z:Transcribed by Illyrean of Meneldor\n'
 ..'L:1/4\n'
@@ -153,7 +153,7 @@ BCtune =
 ..'[^d2^F,/4] =F,/8 ^A,/8 F,/8 ^F,/4 =F,/8 ^A,/8 F,/4 ^F,/8 =F,/8 ^A,/8\n'
 ..'F,/4 [e11/8b11/8^g11/8B,15/8^G,15/8E,15/8] \n'
 
-ABCtune ='X:1\n'
+StillAlive ='X:1\n'
 ..'T:Still Alive\n'
 ..'C:Jonathan Coulton\n'
 ..'N:Arranged by Meldowen\n'
@@ -241,7 +241,7 @@ ABCtune ='X:1\n'
 ..'[DAF2] d f[Dd] [BB,2] [Gd] [Af][B,Ad] |\n'
 ..'[DA]d f[Dd] [B,B][Gd] [Ff][dF-] |F4 ||\n'
 
-BCtune = 'X: 1\n'
+Bumblebee = 'X: 1\n'
 ..'T: Flight Of The Bumblebee, The\n'
 ..'M: 4/4\n'
 ..'Q: 280\n'
