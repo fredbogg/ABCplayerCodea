@@ -66,23 +66,23 @@ function draw()
     background(0, 0, 0, 255)
     ellipse(CurrentTouch.x,CurrentTouch.y,100)
     
-    if myTune == nil or myTune2 == nil then     
+    if myTune == nil then     
         -- Instantiates the class using the tune. 
         -- arg 1 for loop, arg 2 for instrument, arg 3 for debug, arg 4 dumps
-        myTune = ABCMusic(ABCtune1,1,4)
-        myTune2 = ABCMusic(ABCtune2,1,4)
+        myTune = ABCMusic(_,1,4)
+      --  myTune2 = ABCMusic(ABCtune2,1,4)
         --myTune3 = ABCMusic(ABCtune3,1,7)
        -- myTune3 = ABCMusic(ABCtune4,1)
     end
     
     cached = myTune:preCachePlay()
-    cached2 = myTune2:preCachePlay()
+   -- cached2 = myTune2:preCachePlay()
    -- cached3 = myTune3:preCachePlay()
 
     -- Play the next bit of music, not the whole lot 
-    if cached2 == true then
+    if cached == true then
         myTune:play()
-       myTune2:play()
+    --   myTune2:play()
       --  myTune3:play()
        -- myTune3:play()
     else

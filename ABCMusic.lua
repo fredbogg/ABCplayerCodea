@@ -15,9 +15,14 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     self.DEBUG = DEBUG
     if self.DEBUG == nil then self.DEBUG = false end
     if DUMP == nil then DUMP = false end
+    
+    self.soundTable = {} -- this table will hold the parameters to be turned into a sound.
+    
     if _ABCTune == nil then
         print("No tune provided. Use ABCMusic(tunename,LOOP,INSTRUMENT,DEBUG,DUMP)")
         print("For example, mytune = ABCMusic(ABCtune,1,4)")
+        -- use last saved parsed tune
+        self.soundTable = self:loadLastParsedTune()
     end    
     self.LOOP = LOOP
     
@@ -42,7 +47,7 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     self.remainingTupletNotes = 0
     
     
-    self.soundTable = {} -- this table will hold the parameters to be turned into a sound.
+    
     self.timeElapsedSinceLastNote = 0 -- used to check in the draw() loop whether to move on.
     self.duration = 1 -- in ABC format this is a unit, usually equivalent to a quaver.
     self.DurationSeconds = 0 -- to be used to hold the number of seconds a note will be held.
@@ -130,9 +135,13 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
                                                 -- already specified fields like METRE or KEY
                                                 
 --    sound(SOUND_BLIT, 10393)
-    self:parseTune(_ABCTune) -- read and make sense of the ABC tune
---    sound(SOUND_PICKUP, 45359)
-    self:createSoundTable() -- fill table up with freq values and timings to feed sound()
+    -- if not loading the last parsed
+   if _ABCTune ~= nil then
+        self:parseTune(_ABCTune) -- read and make sense of the ABC tune
+        --   sound(SOUND_PICKUP, 45359)
+        self:createSoundTable() -- fill table up with freq values and timings to feed sound()
+    end
+    
 --    sound(SOUND_JUMP, 25400)
     self:preCache() -- play it first silently to cache, without duplicates
 --    sound(SOUND_EXPLODE, 16774)
@@ -140,6 +149,27 @@ function ABCMusic:init(_ABCTune,LOOP,INSTRUMENT,DEBUG,DUMP)
     if DUMP then
         dump(self.soundTable) -- for debugging, but really slow with more than a line of tune
     end
+end
+
+function ABCMusic:loadLastParsedTune()
+    -- get the string saved from the last parse
+    local lsLoadedString = readLocalData("mySavedTune")
+    -- decode it from JSON to table
+    if lsLoadedString ~= nil then
+        
+        print("As no tune was passed, I have loaded the last sound table.")
+    else
+        print("Sorry, you haven't parsed any tunes yet, so I couldn't load the last one.")
+        
+    end
+    return Json.Decode(lsLoadedString)
+end
+
+function ABCMusic:saveParsedTune(table)
+    -- convert nested table to JSON and save as a string
+    local json = Json.Encode(table)
+    saveLocalData("mySavedTune",json)
+    
 end
 
 -- the ABC standard allows fraction durations, so we turn them from strings to numbers here.
@@ -842,6 +872,7 @@ function ABCMusic:createSoundTable()
     
    -- print(self.dataName)
     --saveProjectData(self.dataName, self.soundTable)
+    self:saveParsedTune(self.soundTable)
 end
 
 function ABCMusic:fromTheTop()

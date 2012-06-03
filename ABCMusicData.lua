@@ -312,7 +312,7 @@ BCtune = 'X:1\n'
 ..'[c3/8E3/8C3/8] [B/4D/4B,/4] [c5/8E5/8C5/8] [e5/8G5/8E5/8]\n'
 ..'[c5/8E5/8C5/8] z/8 [e5/8G5/8E5/8] [c37/8E37/8C37/8]'
 
-BCtune='X:1\n'
+BachTune='X:1\n'
 ..'T:Toccata and Fugue in D min \n'
 ..'C:Bach\n'
 ..'Z:celestial\n'
@@ -600,7 +600,7 @@ f/2 z/2 ^d/4 z/8 ^d/8 z5/8 ^d/2 z/2 ^d/8 z/4 ^d/8 z/2 ^d/2 z5/8 ^d/8
 z/8 ^d/4 z/2 ^d/2 z/2 ^d/4 z/8 ^d/8 z5/8 ^d93/8 ]]
 
 
-ABCtune1 = [[X:1
+ABBAtune = [[X:1
 T:Dancing Queen - Flute 
 L:1/4
 Q:1/4=40
