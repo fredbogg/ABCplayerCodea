@@ -28,7 +28,7 @@ done first, playback is possible without slowing down draw frames (psuedo-backgr
 
 Thanks: ipda41001, KMEB, Codeslinger, ruilov, pixel, Simeon
 
-Issues: Many. :) Not compliant with ABC standard, check caching, slow parsing
+Issues: Many. :) Not compliant with ABC standard, slow parsing
 
 Plans: 
 make into two-layered class to remove global namespace pollution;
@@ -39,7 +39,12 @@ download ABC tunes in client;
 
 Change Log:
 
+0.4.3.6 beta
+
+save parsed sound table for quicker loading of same tune;
+
 0.4
+
 precaching;
 tuplets;
 fade function;
