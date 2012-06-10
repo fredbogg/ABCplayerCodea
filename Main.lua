@@ -41,6 +41,7 @@
 -- Change Log:
 
 -- 0.4
+-- added force reload argument
 -- save parsed sound table for quicker loading of same tune
 -- precaching
 -- tuplets
@@ -69,8 +70,8 @@ function draw()
     
     if myTune == nil then     
         -- Instantiates the class using the tune. 
-        -- arg 1 for loop, arg 2 for instrument, arg 3 for debug, arg 4 dumps
-        myTune = ABCMusic(StillAlive,1,4)
+        -- arg 1 for loop, arg 2 for instrument, arg 3 for force parse, 4 for debug, arg 5 dumps
+        myTune = ABCMusic(Study3,1,4,1)
       --  myTune2 = ABCMusic(ABCtune2,1,4)
         --myTune3 = ABCMusic(ABCtune3,1,7)
        -- myTune3 = ABCMusic(ABCtune4,1)

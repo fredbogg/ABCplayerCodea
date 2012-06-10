@@ -2,7 +2,7 @@
 
 ABCMusic = class()
       
-function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,DEBUG,DUMP)
+function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     -- if true, LOOP will keep the tune playing over and over and over...
     -- INSTRUMENT is the element number of the instrument table, which contains sfxr settings.
     -- DEBUG will print out hopefully handy things, but probably not helpful to you.
@@ -14,6 +14,7 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,DEBUG,DUMP)
     self.DEBUG = DEBUG
     if self.DEBUG == nil then self.DEBUG = false end
     if DUMP == nil then DUMP = false end
+    self.RELOAD = RELOAD
     
     self._ABCtune = _ABCTUNE
     if self._ABCtune == nil then
@@ -143,7 +144,7 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,DEBUG,DUMP)
         print("The title of the tune is ".. lsNameHash)
         self.soundTable = self:loadParsedTune(lsNameHash)
         
-        if self.soundTable == nil then
+        if self.soundTable == nil or self.RELOAD then
             self.soundTable = {}
             self:parseTune(self._ABCtune) -- read and make sense of the ABC tune
              -- sound(SOUND_PICKUP, 45359)

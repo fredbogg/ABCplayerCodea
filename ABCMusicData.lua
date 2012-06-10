@@ -354,7 +354,7 @@ BachTune='X:1\n'
 ..'[Fac\'][Ff][^G_bd\'][Afbd\'][=c1/2^g1/2c\'1/2]a1/2[cf][dbd\'][cfbd\']| % 11\n'
 ..'[c1/2^g1/2c\'1/2]a1/2[cf][c-^d][c-e][c=g]gag|] % 12 \n'
 
-ABCtune1 = [[X:1
+Beatles1 = [[X:1
 T:beatles withalittlehelpfrommyfriends (2:33)
 Z:Transcribed using LotRO MIDI Player:http://lotro.acasylum.com/midi
 %  Original file:beatles_withalittlehelpfrommyfriends.mid
@@ -1000,7 +1000,7 @@ z/8 [A,/4^F/4D/4] [A,/2D/4^F/4A/4] [D/4^F/4] [A,/4D/4^F/4]
 [E,/2A,3/4D/4^F/4A/2] [D/4^F/4] [^F,/2D/4^F/4] [A,5/8D/4^F/4A5/8]
 [^G,/2D/4^F/4] [D/8^F/8] ]]
 
-zABCtune1 = [[X:1
+Mood1 = [[X:1
 T:In The Mood (Clarinet) - Order of the Nameless (2:01)
 Z:Transcribed by LotRO MIDI Player:http://lotro.acasylum.com/midi
 %  Original file:Mood.mid
@@ -1239,7 +1239,7 @@ z/2 ^a/8 [^d/8=g/4B/8] z/4 [c/8^g/8e/8] z/8 [=a/4^d/4=f3/8] z/8
 [c'35/8^d37/8^G,/2^g9/2=c37/8] z/8 =C,/2 z/4 ^D,/2 z/4 F,/2 z/8 ^G,/2
 z/4 F,/2 z/8 ^D,/2 z/8 ^G,/8 ^G,29/8 ]]
 
-zABCtune1 = [[X:1
+Air1 = [[X:1
 T:Air on a G String (Clarinet) - Order of the Nameless (2:24)
 Z:Transcribed by LotRO MIDI Player:http://lotro.acasylum.com/midi
 %  Original file:air.mid
@@ -1335,25 +1335,25 @@ z5/8 ^D z/2 =D z/2 =D, z/2 =C,3/4 z3/4 C z/2 ^A,9/8 z3/8 ^A,7/8 z5/8
 z/2 C,7/8 z5/8 F,7/8 z5/8 ^A,7/8 z5/8 C3/4 z3/4 ^A,5/8 z7/8 C5/8 z7/8
 C,3/4 z3/4 F,3/4 [C39/8F,39/8] ]]
 
-ABCtune1 = [[X:1
-T:Study
+Study1 = [[X:1
+T:Study1
 L:1/4
 Q:1/4 = 60
 K:C
 | C,2 C,C C,C | C,2 C,C C,C | F,2 F,F F,F | C,2 C,C C,C ||]]
 
-ABCtune2 = [[X:1
-T:Study
+Study2 = [[X:1
+T:Study2
 L:1/4
 Q:1/4 = 60
 K:C
 | g2 cd ef | g2 c2 c2 | a2 fg ab | c'2 c2 c2 z ||]]
 
-ABCtune3 = [[X:1
-T:Study
+Study3 = [[X:1
+T:Study3b
 L:1/4
 Q:1/4 = 60
 K:C
-z | g2 cd ef | g2 c2 c2 | a2 fg ab | c'2 c2 c2 ||]]
+z | g2 cd ef | g2 c^c =c2 | a2 fg ab | c'2 c2 [=c2c'2] ||]]
 
 end
