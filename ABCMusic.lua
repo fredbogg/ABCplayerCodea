@@ -15,6 +15,7 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     if self.DEBUG == nil then self.DEBUG = false end
     if DUMP == nil then DUMP = false end
     self.RELOAD = RELOAD
+    if self.RELOAD ~= nil then print("Forcing parse of tune.") end
     
     self._ABCtune = _ABCTUNE
     if self._ABCtune == nil then
@@ -25,7 +26,8 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     self.LOOP = LOOP
     
     -- clear the saved tables for tunes before releasing
-    --clearProjectData()
+    
+    -- clearProjectData()
     
     -- initialise variables
     self.time = 0
@@ -200,18 +202,29 @@ function ABCMusic:extractTitle(tune)
 end
 
 function ABCMusic:saveParsedTune(table)
-    -- convert nested table to JSON and save as a string
-    local json = Json.Encode(table)
+    -- if hasn't been saved before and not force parse
     local lsNameHash
     if self._ABCtune ~= nil then
         lsNameHash = self:extractTitle(self._ABCtune)
     end
     if lsNameHash == nil then lsNameHash = "untitled" end
-        
-    saveProjectData(lsNameHash,json) 
+    
+    -- search for name
     local lsSavedTunes = readProjectData("savedTunes")
     if lsSavedTunes == nil then lsSavedTunes = "" end
-    saveProjectData("savedTunes", lsSavedTunes .. "\n" .. lsNameHash)
+   
+    if string.match(lsSavedTunes, lsNameHash) == nil then
+        
+        -- convert nested table to JSON and save as a string
+        local json = Json.Encode(table)
+           
+        saveProjectData(lsNameHash,json) 
+        
+        saveProjectData("savedTunes", lsSavedTunes .. "\n" .. lsNameHash)
+        
+    else
+        print("tune already saved")
+    end
 end
 
 -- the ABC standard allows fraction durations, so we turn them from strings to numbers here.
@@ -934,16 +947,16 @@ end
 function ABCMusic:play()
     
     -- Step through the parsed tune and decide whether to play the next bit yet.
-   -- ABCMusic:timer(0,"x=2")
+   
     -- This normalises the tempo to smooth out lag between cumlative frames.  Meant to be the
     -- same idea for smoothing out animation under variable processing loads.
     self.timeElapsedSinceLastNote = self.timeElapsedSinceLastNote + DeltaTime
     
     -- If there is still a tune and it's time for the next set of notes
-    if self.DurationSeconds <= self.timeElapsedSinceLastNote 
+    if (self.DurationSeconds <= self.timeElapsedSinceLastNote or 
+    (self.soundTablePointer == 1 and self.nLooped ~= true))
         and self.soundTablePointer <= #self.soundTable then
         
-       -- print("in play instrument is ".. self.instrument)
     
         -- Step through the set of notes nested in the sound table, finding each note,
         -- its duration, volume, and instrument.
@@ -1029,11 +1042,12 @@ function ABCMusic:play()
     
         
         -- Looping music... we need a better way to do this...
+            if self.LOOP ~= nil and self.soundTablePointer == #self.soundTable then 
+                self.soundTablePointer = 1
+                self.nLooped = true
+            else
         
-        --print(duration)
-        if self.LOOP ~= nil and self.soundTablePointer == #self.soundTable then 
-            self.soundTablePointer = 1
-        else
+       -- else
             -- Increment the pointer in our sound table.
             self.soundTablePointer = self.soundTablePointer + 1
         end
