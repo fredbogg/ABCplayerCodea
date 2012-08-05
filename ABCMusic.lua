@@ -27,7 +27,7 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     
     -- clear the saved tables for tunes before releasing
     
-    -- clearProjectData()
+     --clearProjectData()
     
     -- initialise variables
     self.time = 0
@@ -106,7 +106,7 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
         TOKEN_METRE = "%[?M:%s?(.-)[%]\n]", -- M: 1/4
         TOKEN_DEFAULT_NOTE_LENGTH = "%[?L:%s?(%d-)%/(%d-)[%]\n]", -- L: 1/8
         TOKEN_TEMPO = "%[?Q:%s?(%d*%/?%d*)%s?=?%s?(%d*)[%]\n]", -- matches deprecated, see standard, Q: 120 or Q: 1/4=120
-        TOKEN_CHORD_DURATION = '%[([%^_=]?[a-gA-G][,\']?[,\']?[,\']?%d*/?%d?.-)%]', -- [CEG]
+        TOKEN_CHORD_DURATION = '%[([%^_=]?[a-gA-G][,\']?[,\']?[,\']?%d*/?%d?.-)%](%d*%.?%d?/?%d?)', -- [CEG]
         TOKEN_GUITAR_CHORD = '"(%a+%d?)"', -- "Gm"
        --[[ TOKEN_START_REPEAT = '|:',
         TOKEN_END_REPEAT = ':|',
@@ -232,10 +232,15 @@ function ABCMusic:convertStringFraction(s)
     if string.sub(s,1,1) == "/" then
             s = "1"..s               
     end
-        if s == "1/" then
-            s = "1/2"
-        end
-                        
+      --  if s == "1/" then
+     --       s = "1/2"
+  --      end
+    if string.sub(s,-1) == "/" then
+            s = s .. "2"
+    end
+        
+       -- print("s is "..s)    
+           
     if string.find(s, "/") ~= nil then
           
         local lnNumerator = tonumber(string.sub(s,1,string.find(s,"/")-1))
@@ -716,6 +721,12 @@ function ABCMusic:createSoundTable()
         end 
         
         if token == "TOKEN_REST_DURATION" then
+            if self.remainingTupletNotes > 0 then
+                self.remainingTupletNotes = self.remainingTupletNotes - 1
+            else
+                self.tupletMultiplier = 1
+            end
+            
             duration = value2
             if string.sub(duration,1,1) == "/" then
                 duration = "1"..duration 
@@ -725,7 +736,7 @@ function ABCMusic:createSoundTable()
                 duration = ABCMusic:convertStringFraction(duration)
             end
             
-            duration = tonumber(duration)
+            duration = tonumber(duration) * self.tupletMultiplier
             table.insert(self.soundTable,
             {{"z", 
              ABCMusic:convertDurationToSeconds(duration,self.tempo),
@@ -850,7 +861,10 @@ function ABCMusic:createSoundTable()
         end
         
         if token == "TOKEN_CHORD_DURATION" then
-            -- These are arbitrary notes sounded simultaneously. 
+            -- These are arbitrary notes sounded simultaneously. if they have internal durations
+            -- they should be multiplied with the external duration in value2
+            if value2 == nil then value2 = 1 end
+            value2 = ABCMusic:convertStringFraction(value2)
             if self.remainingTupletNotes > 0 then
                 self.remainingTupletNotes = self.remainingTupletNotes - 1
             else
@@ -872,7 +886,8 @@ function ABCMusic:createSoundTable()
                 else
                      noteDuration = ABCMusic:convertStringFraction(noteDuration)
                 end
-                
+                -- multiply internal and external duration
+                noteDuration = noteDuration * value2
                 if note == nil then break end
                 
                 -- hack for key signature
