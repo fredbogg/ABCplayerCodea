@@ -1,5 +1,4 @@
-    instrumentNameTable =     {"1-Sine", "2-Wobble","3-String", "4-Blat",  "5-Vibes",  
-                               "6-ClickSpinner",  "7-Snare"}
+    instrumentNameTable = {"Sine", "dunno","Organ", "Warp",  "dunno",  "dinno",  "Snare"}
     
      instrumentTable = { {AttackTime = 0, DecayTime = 0.1}, 
     {AttackTime = 0, SustainPunch = 0.193189, DecayTime = 0.508978, MinimumFrequency = 0, Slide = 0.506914, DeltaSlide = 0.506914, VibratoDepth = 0.514757, VibratoSpeed = 0.67162, ChangeAmount = 0.5, ChangeSpeed = 0.5, SquareDuty = 0.499071, DutySweep = 0.487306, RepeatSpeed = 0.801032, PhaserSweep = 0.49515, LowPassFilterCutoff = 1, LowPassFilterCutoffSweep = 0.5, LowPassFilterResonance = 0.5, HighPassFilterCutoff = 0.5, HighPassFilterCutoffSweep = 0.5, Waveform = 2}, 
