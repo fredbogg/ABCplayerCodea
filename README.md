@@ -39,6 +39,11 @@ download ABC tunes in client;
 
 Change Log:
 
+0.4.3.7
+
+improved chord duration parsing;
+flush parsing cache if master
+
 0.4.3.6 beta
 
 save parsed sound table for quicker loading of same tune;

@@ -41,6 +41,7 @@
 -- Change Log:
 -- 0.4.3.7
 -- improved chord duration parsing
+-- flush parsing cache if master
 
 -- 0.4
 -- added force reload argument
@@ -56,6 +57,7 @@
 -- Use this function to perform your initial setup
 function setup()
     saveProjectInfo( "Description", "Play ABC musical notation format tunes. This project was last run on " .. os.date() .. "." )
+    saveProjectInfo( "Author", "Fred Bogg")
     
   --  watch("DeltaTime")
     text("Loading...",WIDTH/2, HEIGHT/2)
@@ -73,21 +75,21 @@ function draw()
     if myTune == nil then     
         -- Instantiates the class using the tune. 
         -- arg 1 for loop, arg 2 for instrument, arg 3 for force parse, 4 for debug, arg 5 dumps
-        myTune = ABCMusic(take5,1,1,1)
-      -- myTune2 = ABCMusic(ABBAtune2,1,1,1)
-        --myTune3 = ABCMusic(titanicPiano,1,2,1)
-       -- myTune3 = ABCMusic(ABCtune4,1)
+        myTune = ABCMusic(BoggBlues,1,2)
+       myTune2 = ABCMusic(BoggBlues,1,7)
+       -- myTune3 = ABCMusic(BoggBlues,1,2)
+       -- myTune3 = ABCMusic(BoggBlues,1,1)
     end
     
     cached = myTune:preCachePlay()
- --cached2 = myTune2:preCachePlay()
+    cached2 = myTune2:preCachePlay()
     --cached3 = myTune3:preCachePlay()
 
     -- Play the next bit of music, not the whole lot 
-    if cached == true then
+    if cached2 == true then
      myTune:play()
-     --myTune2:play()
-     --  myTune3:play()
+     myTune2:play()
+    --  myTune3:play()
        -- myTune3:play()
     else
         text("Caching... %".. math.floor(gnCachedIdx/ #gPreCacheSoundTable * 100),

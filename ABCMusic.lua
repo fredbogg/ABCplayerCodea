@@ -8,6 +8,11 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     -- DEBUG will print out hopefully handy things, but probably not helpful to you.
     -- DUMP should only be used in emergencies and then only with several bars worth, or hang.
     
+         
+    -- clear the saved tables for tunes before releasing to GitHub
+
+    -- clearProjectData()
+    
     -- take arguments and set defaults
     self.instrument = INSTRUMENT
     if self.instrument == nil then self.instrument = 1 end
@@ -24,10 +29,6 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
     end    
     
     self.LOOP = LOOP
-    
-    -- clear the saved tables for tunes before releasing
-    
-     --clearProjectData()
     
     -- initialise variables
     self.time = 0
