@@ -10,11 +10,13 @@
 		<string>ABCMusicData</string>
 		<string>ABCMusicInstruments</string>
 		<string>JSON</string>
+		<string>MusicSetup</string>
+		<string>MusicTick</string>
 		<string>Main</string>
 	</array>
 	<key>Created</key>
 	<string>2012-07-29 11:44:23 +0000</string>
 	<key>Description</key>
-	<string>Play ABC musical notation format tunes. This project was last run on Sun Aug  5 20:18:36 2012.</string>
+	<string>Play ABC musical notation format tunes. This project was last run on Sun Aug  5 23:28:05 2012.</string>
 </dict>
 </plist>

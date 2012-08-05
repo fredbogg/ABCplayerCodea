@@ -59,10 +59,9 @@ function setup()
     saveProjectInfo( "Description", "Play ABC musical notation format tunes. This project was last run on " .. os.date() .. "." )
     saveProjectInfo( "Author", "Fred Bogg")
     
-  --  watch("DeltaTime")
-    text("Loading...",WIDTH/2, HEIGHT/2)
-    -- quickly loads data into ABCtune string variable
-    sampleMusic()
+    watch("DeltaTime")
+    
+    musicSetup()
 end   
 
 -- This function gets called once every frame
@@ -72,28 +71,6 @@ function draw()
     background(0, 0, 0, 255)
     ellipse(CurrentTouch.x,CurrentTouch.y,100)
     
-    if myTune == nil then     
-        -- Instantiates the class using the tune. 
-        -- arg 1 for loop, arg 2 for instrument, arg 3 for force parse, 4 for debug, arg 5 dumps
-        myTune = ABCMusic(BoggBlues,1,2)
-       myTune2 = ABCMusic(BoggBlues,1,7)
-       -- myTune3 = ABCMusic(BoggBlues,1,2)
-       -- myTune3 = ABCMusic(BoggBlues,1,1)
-    end
-    
-    cached = myTune:preCachePlay()
-    cached2 = myTune2:preCachePlay()
-    --cached3 = myTune3:preCachePlay()
+    musicTick()
 
-    -- Play the next bit of music, not the whole lot 
-    if cached2 == true then
-     myTune:play()
-     myTune2:play()
-    --  myTune3:play()
-       -- myTune3:play()
-    else
-        text("Caching... %".. math.floor(gnCachedIdx/ #gPreCacheSoundTable * 100),
-        WIDTH/2, HEIGHT/2)
-    end
- 
 end
