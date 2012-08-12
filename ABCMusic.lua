@@ -806,6 +806,12 @@ function ABCMusic:createSoundTable()
                 self.q = value1
             end
             
+            -- to match (3 meaning (3:2:2
+            if self.q == nil then 
+                self.q = 2
+                self.r = 2
+            end
+            
             if value2 == 1 then
                 self.remainingTupletNotes = self.p
             else

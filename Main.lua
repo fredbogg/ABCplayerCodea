@@ -14,7 +14,7 @@
    limitations under the License.
 --]]
 -- Project Name: ABCplayerCodea
--- Version: 0.4.3.7 beta
+-- Version: 0.4.3.8 beta
 -- By Fred Bogg
 -- Begun: November 2011
 
@@ -39,6 +39,10 @@
 -- download ABC tunes in client
 
 -- Change Log:
+
+-- 0.4.3.8
+-- fixed triplet parsing
+
 -- 0.4.3.7
 -- improved chord duration parsing
 -- flush parsing cache if master
