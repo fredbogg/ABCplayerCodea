@@ -13,10 +13,16 @@
 		<string>MusicSetup</string>
 		<string>MusicTick</string>
 		<string>Main</string>
+		<string>Redirect</string>
 	</array>
 	<key>Created</key>
 	<string>2012-07-29 11:44:23 +0000</string>
+	<key>Dependencies</key>
+	<array>
+		<string>print redirect</string>
+		<string>Debug</string>
+	</array>
 	<key>Description</key>
-	<string>Play ABC musical notation format tunes. This project was last run on Sun Aug 12 17:11:25 2012.</string>
+	<string>Play ABC musical notation format tunes. This project was last run on Fri Aug 24 09:04:58 2012.</string>
 </dict>
 </plist>

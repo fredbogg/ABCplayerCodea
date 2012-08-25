@@ -1,3 +1,5 @@
+-- #include debug
+-- #include print redirect
 --[[
    Copyright 2012 Fred Bogg
 
@@ -66,7 +68,25 @@ function setup()
     watch("DeltaTime")
     
     musicSetup()
+    
+    debug()
+    
 end   
+
+function debug()
+    
+    -- Initialize redirection of print:
+   -- print.redirect.on()
+    print.redirect.font("Inconsolata", 16)
+    print.redirect.on()
+    -- Activate / deactivate debugging outputs here:
+   -- dbg.on(DEBUG)
+    dbg.setWatchRect(WIDTH / 2, HEIGHT / 2 - 120, WIDTH / 2 - 30, HEIGHT / 2 + 100)
+    dbg.setWatchAlpha(60)
+    dbg.setFontSize(18)
+    dbg.watch("DeltaTime")
+    dbg.log(DEBUG, "Initializing done.")
+end    
 
 -- This function gets called once every frame
 function draw()    

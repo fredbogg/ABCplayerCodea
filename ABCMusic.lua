@@ -107,15 +107,15 @@ function ABCMusic:init(_ABCTUNE,LOOP,INSTRUMENT,RELOAD,DEBUG,DUMP)
         TOKEN_METRE = "%[?M:%s?(.-)[%]\n]", -- M: 1/4
         TOKEN_DEFAULT_NOTE_LENGTH = "%[?L:%s?(%d-)%/(%d-)[%]\n]", -- L: 1/8
         TOKEN_TEMPO = "%[?Q:%s?(%d*%/?%d*)%s?=?%s?(%d*)[%]\n]", -- matches deprecated, see standard, Q: 120 or Q: 1/4=120
-        TOKEN_CHORD_DURATION = '%[([%^_=]?[a-gA-G][,\']?[,\']?[,\']?%d*/?%d?.-)%](%d*%.?%d?/?%d?)', -- [CEG]
+        TOKEN_CHORD_DURATION = '%[([%^_=]?[a-gA-Gz][,\']?[,\']?[,\']?%d*/?%d?.-)%](%d*%.?%d?/?%d?)', -- [CEG]i
         TOKEN_GUITAR_CHORD = '"(%a+%d?)"', -- "Gm"
        --[[ TOKEN_START_REPEAT = '|:',
         TOKEN_END_REPEAT = ':|',
         TOKEN_END_REPEAT_START = ":|?:",
         TOKEN_NUMBERED_REPEAT_START = "[|%[]%d",
         --]]
-        TOKEN_NOTE_DURATION = '([%^_=]?[a-gA-GzZ][,\']?[,\']?[,\']?)(%d*%.?%d?/?%d?)', -- c'2
-      --[[  TOKEN_PREV_DOTTED_NEXT_HALVED = ">",
+        TOKEN_NOTE_DURATION = '([%^_=]?[a-gA-GzZ][,\']?[,\']?[,\']?)(%d*%.?%d?/?%d*)', -- c'2.667
+      --[[  TOKEN_PREV_DOTTED_NEXT_HALVED = ">", -- ^ now we need 8 digits including .
         TOKEN_PREV_HALVED_NEXT_DOTTED = "<",
         TOKEN_SPACE = "%s",--]]
         TOKEN_BARLINE = "|",
@@ -255,7 +255,207 @@ end
 function ABCMusic:parseTune(destructableABCtune)
     
     self.destructableABCtune = destructableABCtune
-    if self.DEBUG then  print(self.destructableABCtune.."\n") end
+    if self.DEBUG then print("tune: ".. self.destructableABCtune .."\n") end
+    dbg.log(DEBUG,"tune: ".. self.destructableABCtune .."\n") 
+    -- replace triplets first, otherwise the replaced ties make this impossible
+    -- do for as many tuplets as there are
+    local lnTupletSearchStartIndex = 1
+    local lnNextTupletStartIndex
+    local lnNextTupletEndIndex
+    self.remainingTupletNotes = 0
+    
+    repeat
+         -- find next tuplet
+        lnNextTupletStartIndex, lnNextTupletEndIndex, value1, value2 = 
+            string.find(self.destructableABCtune,
+                 gtTokenList["TOKEN_TUPLET_INDICATOR"],lnTupletSearchStartIndex)
+                
+
+        -- bail if none found in this tune
+        if lnNextTupletStartIndex == nil then 
+            dbg.log(DEBUG,"no tuplets found.")
+            break 
+        end
+            dbg.log(DEBUG,"lnNextTupletStartIndex, lnNextTupletEndIndex, value1, value2: "..lnNextTupletStartIndex, lnNextTupletEndIndex, value1, value2 )
+                
+        
+        rawMatch = string.sub(self.destructableABCtune, lnNextTupletStartIndex, lnNextTupletEndIndex)
+        dbg.log(DEBUG,"\n***\nlnNextTupletStartIndex, lnNextTupletEndIndex: " .. lnNextTupletStartIndex, lnNextTupletEndIndex)
+         lnTupletSearchStartIndex = lnNextTupletEndIndex
+        
+        -- what kind is it? compute the multiplier
+        -- duplicate code, plan to make it a function
+         
+             dbg.log(DEBUG,"tuplet was "..rawMatch) 
+            self.p = tonumber(string.sub(rawMatch,2,2))
+            if value1 == 1 then
+                if self.p == 3 then self.p = 2 end
+                if self.p == 2 then self.p = 3 end
+                if self.p == 4 then self.p = 3 end
+                if self.p == 5 or self.p == 7 or self.p == 9 then 
+                    if string.sub(self.metre,-1,-1) == 8 then
+                        self.p = 3
+                    else 
+                        self.p = 2
+                    end 
+                end
+                if self.p == 6 then self.p = 2 end
+                if self.p == 8 then self.p = 3 end
+            else 
+                self.q = value1
+            end
+            
+            -- to match (3 meaning (3:2:2
+            if self.q == nil or self.q == "" then 
+                self.q = 2
+                self.r = 2
+                self.p = 3
+            end
+            
+            if value2 == 1 then
+                self.remainingTupletNotes = self.p
+            else 
+                if value2 ~= nil then
+                    self.remainingTupletNotes = tonumber(value2)
+                end
+            end
+            -- OMG this needs work.
+            if self.remainingTupletNotes == nil then
+                self.remainingTupletNotes = 2
+            end
+            dbg.log(DEBUG,"self.remainingTupletNotes: " .. self.remainingTupletNotes)
+            
+            -- 'put p notes into the time of q for the next r notes'. ABC Standard.
+            -- If q is not given, it defaults as above. If r is not given, it defaults to p.
+            self.tupletMultiplier = tonumber(self.q)/self.p
+            if self.DEBUG then print("p "..self.p .." q ".. self.q .." r ".. self.remainingTupletNotes) end
+          -- end duplicate code         
+        
+        -- remove it
+        self.destructableABCtune = string.sub(self.destructableABCtune,1,lnNextTupletStartIndex-1)
+          .. string.sub(self.destructableABCtune,lnNextTupletEndIndex+1)
+        dbg.log(DEBUG,"removed tuplet indicator")
+       -- print(self.destructableABCtune)
+        
+        -- for as many notes as specified, apply the multiplier and replace the duration
+        local lnDurationSearchStartIndex
+            lnDurationSearchStartIndex = lnNextTupletStartIndex
+        
+        repeat
+            -- find next chord or note
+            
+            local lnNextStartIndex
+            local lnNextEndIndex
+            local lnNextStartIndex1
+            local lnNextStartIndex2
+            local lnFinishedChordOrNote
+            
+            lnNextStartIndex1, lnNextEndIndex, rawMatch, value1, value2 = 
+            string.find(self.destructableABCtune,
+                 gtTokenList["TOKEN_CHORD_DURATION"],lnDurationSearchStartIndex)
+                
+            lnNextStartIndex2, lnNextEndIndex, rawMatch, value1, value2 =    
+            string.find(self.destructableABCtune,
+                 gtTokenList["TOKEN_NOTE_DURATION"],lnDurationSearchStartIndex)
+            
+            if lnNextStartIndex1 == nil then lnNextStartIndex1 = 0 end
+            if lnNextStartIndex2 == nil then lnNextStartIndex2 = 0 end
+            
+            if lnNextStartIndex1 < lnNextStartIndex2 then --  found chord first
+                
+                lnNextStartIndex, lnNextEndIndex, rawMatch, value1, value2 = 
+                    string.find(self.destructableABCtune,
+                     gtTokenList["TOKEN_CHORD_DURATION"],lnDurationSearchStartIndex)
+                lnFinishedChordOrNote = false
+            else
+                lnNextStartIndex = lnNextStartIndex2  
+                lnFinishedChordOrNote = true
+            end
+            
+            -- locate duration (%d*%.?%d?/?%d?)
+            -- repeat for all durations before end index (should work for chords and notes)
+            -- needto fix this to p notes/chords
+
+            dbg.log(DEBUG,"start from lnDurationSearchStartIndex: "..lnDurationSearchStartIndex)
+        
+
+            local lsDurationRawMatch
+            local lnNextDurationEndIndex 
+            local lnNextDurationStartIndex
+            local lnNewDuration
+            
+            repeat
+             lnNextDurationStartIndex,lnNextDurationEndIndex,lsDurationRawMatch = 
+                string.find(self.destructableABCtune, "(%d?%d/?%d?)",
+                    lnDurationSearchStartIndex)
+                    
+                if lsDurationRawMatch == nil or lsDurationRawMatch == "" then
+                    dbg.log(DEBUG,"no durations found")
+                    break
+                end
+                
+                -- check for next end of chord indicator: ] if less than next match then done
+                local lnEndNextChordIndex = 
+                string.find(self.destructableABCtune, "%]",
+                    lnDurationSearchStartIndex)
+                if lnEndNextChordIndex > 0 and lnEndNextChordIndex < lnNextDurationStartIndex then
+                    lnFinishedChordOrNote = true
+                    dbg.log(DEBUG,"end of chord reached")
+                    break
+                end
+                
+                dbg.log(DEBUG,"---")
+                dbg.log(DEBUG,"lnNextDurationStartIndex: "..lnNextDurationStartIndex)   
+                dbg.log(DEBUG,"lnNextDurationEndIndex: "..lnNextDurationEndIndex )           
+                 dbg.log(DEBUG,"lsDurationRawMatch: "..lsDurationRawMatch)
+       
+                if string.sub(lsDurationRawMatch,1,1) == "/" then
+                    lsDurationRawMatch = "1".. lsDurationRawMatch 
+                end
+                
+                if string.find(lsDurationRawMatch, "/") ~= nil then
+                    lsDurationRawMatch = ABCMusic:convertStringFraction(lsDurationRawMatch)
+                end
+                 -- apply multiplier
+                lnNewDuration = tonumber(lsDurationRawMatch) * self.tupletMultiplier
+            
+                -- replace it
+                local lnInsertedDurationLength = string.len(lnNewDuration) 
+                --print("lnDurationSearchStartIndex: "..lnDurationSearchStartIndex )
+                dbg.log(DEBUG,"lnInsertedDurationLength: "..lnInsertedDurationLength)
+                dbg.log(DEBUG,"replacing duration " 
+        .. string.sub(self.destructableABCtune, lnNextDurationStartIndex,lnNextDurationEndIndex) 
+                .. " with "..lnNewDuration)
+                
+                local lsFirstBit = string.sub(self.destructableABCtune,
+                 1, lnNextDurationStartIndex - 1)
+                 local lsLastBit = string.sub(self.destructableABCtune,
+                     lnNextDurationEndIndex + 1, -1)
+                              
+                dbg.log(DEBUG,"combining ".. lsFirstBit .. " with " .. lnNewDuration .. " and " .. lsLastBit)
+                
+                self.destructableABCtune = lsFirstBit .. lnNewDuration .. lsLastBit
+                
+                -- move the start position of next search forward to after what we replaced
+                lnDurationSearchStartIndex = 
+                    lnNextDurationStartIndex + lnInsertedDurationLength
+              
+            --    dbg.log(DEBUG,"lnDurationSearchStartIndex: "..lnDurationSearchStartIndex 
+            --    .. " and lnNextEndIndex "..lnNextEndIndex)
+            
+               -- print("tune is ".. self.destructableABCtune)
+                
+            -- need to fix this until
+            until lnFinishedChordOrNote == true -- lnDurationSearchStartIndex >= lnNextEndIndex 
+            
+            -- reduce counter of tuplet notes once left chord or note
+            self.remainingTupletNotes = self.remainingTupletNotes - 1
+         
+        until self.remainingTupletNotes == 0
+    
+    until lnNextTupletStartIndex == nil
+    
+    dbg.log(DEBUG,self.destructableABCtune)
     
     -- Go through the tune looking for ties and replace them with a single note of longer duration
     local lnSearchStartIndex
@@ -318,13 +518,22 @@ function ABCMusic:parseTune(destructableABCtune)
             totalTieDuration = 1 
         end
         
+        if string.sub(tieCapture1,1,1) == "=" then
+            tieCapture1 = string.sub(tieCapture1,2,-1)
+        end
+        
         while true do
+            
             -- the end tie index will expand and contract depending on what the pattern match was.
             startNextTieIndex, endNextTieIndex, tieNextCapture1, tieNextCapture2, possHyphen =
-             string.find(self.destructableABCtune, "("..tieCapture1..")(%d*/?%d?)([^,\'])",endTieIndex)
+             string.find(self.destructableABCtune,
+                 "("..tieCapture1..")(%d*%.?%d?/?%d*)([^,\'])",endTieIndex) -- ^ = complement of set
+              --  "("..tieCapture1..")([^,%'])(%d*/?%d?)",endTieIndex)
+                
             
-            if startNextTieIndex == nil then 
-                if self.DEBUG then print("Unresolved tie at ".. endTieIndex) end
+            if startNextTieIndex == nil then  
+                print("Unresolved tie at ".. endTieIndex)
+                 dbg.log(DEBUG, "Rest of tune: ".. string.sub(self.destructableABCtune, endTieIndex))
                 break
             end
             
@@ -351,8 +560,11 @@ function ABCMusic:parseTune(destructableABCtune)
                 
                 local firstPart = string.sub(self.destructableABCtune,1,startNextTieIndex-1)
                 local secondPart = string.sub(self.destructableABCtune,endNextTieIndex)
+                 -- leave an equivalent rest otherwise the tune skips
+                secondPart =  "z" .. tieNextCapture2 .. secondPart
                 self.destructableABCtune = firstPart..secondPart
-                --print("no more ties combining ".. firstPart.." with ".. secondPart)
+              
+      --  print("no more ties combining ".. firstPart.." with ".. secondPart)
                 break
             else
                  -- we found a hyphen
@@ -361,7 +573,7 @@ function ABCMusic:parseTune(destructableABCtune)
                 --print("endnextTieIndex is "
  --       ..string.sub(self.destructableABCtune,endNextTieIndex,endNextTieIndex))
                 self.destructableABCtune = firstPart..secondPart
-                --print("another attached tie, combining ".. firstPart.." with ".. secondPart)
+           -- print("another attached tie, combining ".. firstPart.." with ".. secondPart)
                 
             end 
             endTieIndex = endNextTieIndex  
@@ -496,6 +708,9 @@ function ABCMusic:parseTune(destructableABCtune)
             if self.DEBUG then 
                 print("No match found for character ".. string.sub(self.destructableABCtune,1,1) )
                 print("Remaining characters: ".. #self.destructableABCtune)
+                if string.sub(self.destructableABCtune,1,1) ~= " " then
+                    print("Remaining Tune: ".. self.destructableABCtune)
+                end
             end
             -- set the whittler to trim the strange character away
             lastLongest = 1
@@ -786,6 +1001,8 @@ function ABCMusic:createSoundTable()
             self.metre = value1
         end
         
+        -- Tuplet or Duplets, Triplets etc, get used a lot for MIDI converted music
+        -- Gotta figure a way to include chords
         if token == "TOKEN_TUPLET_INDICATOR" then
             if self.DEBUG then print("tuplet was "..rawMatch) end
             self.p = tonumber(string.sub(rawMatch,2,2))
@@ -895,6 +1112,12 @@ function ABCMusic:createSoundTable()
                 end
                 -- multiply internal and external duration
                 noteDuration = noteDuration * value2
+               -- print("chord duration: ".. noteDuration)
+                -- if this chord is part of a tuplet we need to adjust the duration
+              --  print("tuplet multiplier: ".. self.tupletMultiplier)
+                noteDuration = tonumber(noteDuration) * self.tupletMultiplier
+               -- print("funal duration: ".. noteDuration)
+                
                 if note == nil then break end
                 
                 -- hack for key signature
